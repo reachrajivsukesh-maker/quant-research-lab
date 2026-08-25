@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Rajiv's Quant Trading Roadmap — Tracker</title>
+<style>
+  :root{
+    --bg:#f7f8fa; --card:#ffffff; --ink:#1a2233; --ink-soft:#5b6472;
+    --line:#e3e6ea; --accent:#1f3864; --accent-soft:#eef1f7;
+    --good:#2e7d5b; --good-bg:#e8f5ee; --warn-bg:#fff4e5; --warn-line:#f0c674;
+    --track:#e3e6ea;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    line-height:1.5;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:32px 20px 80px;}
+  header.top{margin-bottom:20px;}
+  h1{font-size:26px;margin:0 0 4px;color:var(--accent);}
+  .sub{color:var(--ink-soft);font-size:14px;margin-bottom:20px;}
+  .progress-overall{
+    background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:18px 20px; margin-bottom:18px;
+  }
+  .progress-overall .label{display:flex;justify-content:space-between;font-size:13px;color:var(--ink-soft);margin-bottom:8px;}
+  .bar{height:10px;background:var(--track);border-radius:6px;overflow:hidden;}
+  .bar > div{height:100%;background:var(--accent);border-radius:6px;transition:width .3s ease;}
+  .banner{
+    background:var(--warn-bg); border:1px solid var(--warn-line); border-radius:10px;
+    padding:14px 16px; font-size:13.5px; color:#5c4a13; margin-bottom:22px;
+  }
+  .banner b{color:#4a3a0a;}
+  .phase{
+    background:var(--card); border:1px solid var(--line); border-radius:12px;
+    margin-bottom:14px; overflow:hidden;
+  }
+  .phase-head{
+    display:flex; align-items:center; gap:14px; padding:16px 18px; cursor:pointer;
+    user-select:none;
+  }
+  .phase-num{
+    width:34px;height:34px;border-radius:50%;background:var(--accent-soft);color:var(--accent);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex:none;
+  }
+  .phase-title{flex:1;}
+  .phase-title .t{font-weight:600;font-size:15.5px;}
+  .phase-title .tf{font-size:12.5px;color:var(--ink-soft);}
+  .phase-progress{font-size:12.5px;color:var(--ink-soft);min-width:56px;text-align:right;}
+  .chev{transition:transform .2s ease;color:var(--ink-soft);flex:none;}
+  .phase.open .chev{transform:rotate(90deg);}
+  .phase-bar{height:5px;background:var(--track);}
+  .phase-bar > div{height:100%;background:var(--accent);transition:width .3s ease;}
+  .phase-body{display:none;padding:4px 20px 18px 20px;}
+  .phase.open .phase-body{display:block;}
+  .section-label{font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);margin:14px 0 6px;font-weight:600;}
+  .item{display:flex;align-items:flex-start;gap:9px;padding:5px 0;font-size:14px;}
+  .item input{margin-top:4px;flex:none;width:16px;height:16px;accent-color:var(--accent);cursor:pointer;}
+  .item label{cursor:pointer;}
+  .item.checked label{color:var(--ink-soft);text-decoration:line-through;}
+  .res{font-size:13.5px;color:var(--ink-soft);padding:4px 0 4px 25px;}
+  table.mini{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px;}
+  table.mini th{background:var(--accent);color:#fff;text-align:left;padding:6px 8px;font-weight:600;}
+  table.mini td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top;}
+  .note{font-size:12.5px;color:var(--ink-soft);margin-top:24px;text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>From Mechanical Engineering to Quant Trading</h1>
+    <div class="sub">Rajiv Sukesh · IIT Madras · roadmap tracker</div>
+  </header>
+
+  <div class="progress-overall">
+    <div class="label"><span>Overall progress</span><span id="overallText">0 / 0</span></div>
+    <div class="bar"><div id="overallBar" style="width:0%"></div></div>
+  </div>
+
+  <div class="banner">
+    <b>Reality check, always visible:</b> genuine HFT (colocated, microsecond) is institutional infrastructure, not a personal project — the achievable individual path is systematic/algorithmic trading under SEBI's retail rules, at second-to-minute timescales. Full detail is in the companion document.
+  </div>
+
+  <div id="phases"></div>
+
+  <table class="mini">
+    <tr><th>When</th><th>Where you should be</th><th>Action</th></tr>
+    <tr><td>Now → Dec 2026</td><td>Phases 0-2</td><td>Foundations + first pricing projects; enter competitions for experience</td></tr>
+    <tr><td>Aug-Dec 2026</td><td>Phases 2-3, Phase 5 starts</td><td>Intensify interview prep; apply to SIP / off-campus quant openings</td></tr>
+    <tr><td>Summer 2027</td><td>Phases 3-4 mostly done</td><td>Target: quant internship (India prop shop / global firm's India office)</td></tr>
+    <tr><td>Year 4 (2027-28)</td><td>Full portfolio built</td><td>Full-time recruiting cycle</td></tr>
+  </table>
+
+  <div class="note">Checkboxes reset if you reload this page in a new session — use it as a working reference during a sitting, and rely on the Word document + your GitHub journal as the durable record of progress.</div>
+</div>
+
+<script>
+const phases = [
+  {
+    num: 0, title: "Orientation & Foundations Refresh", tf: "Weeks 1-4",
+    items: [
+      "Map the industry: roles and firm types",
+      "Learn who hires from India (iRage, Quadeye, Graviton, AlphaGrep, Estee, NK Securities, Optiver, Tower, Citadel Securities, Jump, HRT, IMC)",
+      "Refresh calculus & linear algebra basics",
+      "Level up Python: NumPy, pandas, matplotlib, Jupyter",
+      "Set up GitHub repo + commit weekly",
+      "Daily probability warm-up (Khan Academy / Brilliant)",
+      "Read Mazzoni intro + Ch.2"
+    ],
+    resources: ["3Blue1Brown — Essence of Linear Algebra", "MIT OCW 18.06", "Khan Academy Probability & Statistics", "QuantStart / QuantInsti blogs"]
+  },
+  {
+    num: 1, title: "Core Quant Math & Programming Foundations", tf: "Months 2-4",
+    items: [
+      "Probability deep-dive (Mazzoni Ch.2)",
+      "Linear algebra for finance (Mazzoni Ch.3)",
+      "Utility theory & risk aversion (Mazzoni Ch.4)",
+      "Statistics: estimation, hypothesis testing, regression",
+      "Data structures & algorithms fluency",
+      "Pandas/NumPy fluency for time series",
+      "Daily Zhou probability/stats problem",
+      "3x/week LeetCode Easy/Medium",
+      "Weekly chapter summary in GitHub repo"
+    ],
+    resources: ["Mazzoni Ch.1-6 (project doc)", "Zhou — Probability & Stats chapters (project doc)", "Harvard Stat 110 (Blitzstein)", "MIT OCW 18.06", "LeetCode / Grokking Algorithms"]
+  },
+  {
+    num: 2, title: "Derivatives, Stochastic Calculus & Financial Engineering", tf: "Months 4-7",
+    items: [
+      "No-arbitrage pricing, forwards, swaps (Blyth Ch.1-5)",
+      "Options, Black-Scholes, Greeks (Blyth Ch.6-10)",
+      "Brownian motion, Itô's lemma, SDEs (Walden Ch.9 + Mariani/Florescu)",
+      "Asset pricing theory: state prices, risk-neutral measures (Walden Ch.6-8)",
+      "Numerical methods: Monte Carlo, finite difference (Walden Ch.11)",
+      "Portfolio theory: mean-variance, CAPM, APT (Mazzoni Ch.6-7)",
+      "Build Black-Scholes pricer + Greeks from scratch",
+      "Build binomial tree pricer, check convergence",
+      "Monte Carlo GBM option pricing project",
+      "Weekly 3-5 stochastic calc problems from Zhou"
+    ],
+    resources: ["Blyth (project doc)", "Walden Parts I & II (project doc)", "Mariani & Florescu (project doc)", "Shreve — Stochastic Calculus for Finance (optional)", "MIT OCW 18.S096"]
+  },
+  {
+    num: 3, title: "Statistical & Algorithmic Trading, Market Microstructure", tf: "Months 7-10",
+    items: [
+      "Market microstructure: order books, spreads, adverse selection",
+      "Time-series econometrics: ARIMA, GARCH, cointegration",
+      "Statistical arbitrage: mean reversion, pairs/basket trading, factor models",
+      "ML for markets: regression/classification, cross-validation, overfitting/lookahead bias",
+      "Backtesting methodology: walk-forward, costs, slippage",
+      "Build mean-reversion pairs-trading backtest on NSE data",
+      "Reproduce a momentum/mean-reversion factor on Nifty 50; stress-test it",
+      "Submit first alpha to WorldQuant BRAIN"
+    ],
+    resources: ["Larry Harris — Trading and Exchanges", "Ernest Chan — Algorithmic Trading", "WorldQuant BRAIN", "QuantConnect / LEAN", "WorldQuant University free program"]
+  },
+  {
+    num: 4, title: "Live Practice & HFT Systems Literacy", tf: "Months 10-14",
+    items: [
+      "Study real HFT systems conceptually (colocation, FPGA, kernel bypass)",
+      "Register broker API access (Kite Connect / Upstox / Fyers / SmartAPI)",
+      "Register static IP + daily 2FA compliance flow",
+      "Keep strategy white-box & documented",
+      "Set up risk management: position sizing, loss limits, kill switch",
+      "Paper-trade Phase 3 strategy 4-6 weeks",
+      "Go live with small, affordable-to-lose capital",
+      "Log everything; write up the project as a portfolio piece"
+    ],
+    resources: ["sebi.gov.in — verify current retail algo rules", "Zerodha Varsity + Kite Connect docs", "Optiver / HRT / Jump engineering blogs"]
+  },
+  {
+    num: 5, title: "Interview Prep & Recruiting", tf: "Months 5-14 (parallel)",
+    items: [
+      "Work through Zhou's interview guide cover to cover",
+      "Daily mental math / estimation practice",
+      "Practice market-making style interviews (Ready Trader Go)",
+      "Build & polish GitHub portfolio",
+      "Rewrite resume for quant roles (reframe PID/control-systems work)",
+      "Enter competitions: IMC Prosperity, Ready Trader Go, Jane Street Kaggle, WorldQuant IQC, CME challenge, RITC",
+      "Monthly mock interview from month 8",
+      "Apply to SIP + off-campus quant roles (check IMC's IIT Madras listing)"
+    ],
+    resources: ["Zhou (project doc)", "Competition sites listed above", "IITM Career Development Cell"]
+  }
+];
+
+const container = document.getElementById("phases");
+
+function updateProgress(){
+  let doneTotal=0, allTotal=0;
+  phases.forEach(ph=>{
+    const boxes = document.querySelectorAll(`.item[data-phase="${ph.num}"] input`);
+    let done=0;
+    boxes.forEach(b=>{ if(b.checked) done++; });
+    allTotal += boxes.length; doneTotal += done;
+    const pct = boxes.length? Math.round(done/boxes.length*100):0;
+    document.getElementById(`phaseBar${ph.num}`).style.width = pct+"%";
+    document.getElementById(`phaseText${ph.num}`).textContent = `${done}/${boxes.length}`;
+  });
+  const overallPct = allTotal? Math.round(doneTotal/allTotal*100):0;
+  document.getElementById("overallBar").style.width = overallPct+"%";
+  document.getElementById("overallText").textContent = `${doneTotal} / ${allTotal} (${overallPct}%)`;
+}
+
+phases.forEach(ph=>{
+  const div = document.createElement("div");
+  div.className="phase";
+  div.innerHTML = `
+    <div class="phase-head" data-toggle="${ph.num}">
+      <div class="phase-num">${ph.num}</div>
+      <div class="phase-title">
+        <div class="t">${ph.title}</div>
+        <div class="tf">${ph.tf}</div>
+      </div>
+      <div class="phase-progress" id="phaseText${ph.num}">0/${ph.items.length}</div>
+      <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+    <div class="phase-bar"><div id="phaseBar${ph.num}" style="width:0%"></div></div>
+    <div class="phase-body">
+      <div class="section-label">Lessons & practice</div>
+      ${ph.items.map((it,i)=>`
+        <div class="item" data-phase="${ph.num}">
+          <input type="checkbox" id="p${ph.num}i${i}">
+          <label for="p${ph.num}i${i}">${it}</label>
+        </div>`).join("")}
+      <div class="section-label">Resources</div>
+      ${ph.resources.map(r=>`<div class="res">• ${r}</div>`).join("")}
+    </div>
+  `;
+  container.appendChild(div);
+});
+
+container.addEventListener("click", (e)=>{
+  const head = e.target.closest(".phase-head");
+  if(head){
+    head.closest(".phase").classList.toggle("open");
+    return;
+  }
+});
+container.addEventListener("change", (e)=>{
+  if(e.target.matches('input[type="checkbox"]')){
+    e.target.closest(".item").classList.toggle("checked", e.target.checked);
+    updateProgress();
+  }
+});
+
+// open phase 0 by default
+document.addEventListener("DOMContentLoaded", ()=>{
+  container.querySelector(".phase").classList.add("open");
+  updateProgress();
+});
+</script>
+</body>
+</html>

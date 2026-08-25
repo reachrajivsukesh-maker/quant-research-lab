@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Quant Study Partner</title>
+<style>
+  :root{
+    --bg:#f7f8fa; --card:#ffffff; --ink:#1a2233; --ink-soft:#5b6472;
+    --line:#e3e6ea; --accent:#1f3864; --accent-soft:#eef1f7;
+    --good:#2e7d5b; --good-bg:#e8f5ee; --bad:#a33; --bad-bg:#fbeaea;
+    --warn-bg:#fff4e5; --warn-line:#f0c674;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.5;}
+  .wrap{max-width:880px;margin:0 auto;padding:32px 20px 80px;}
+  h1{font-size:25px;margin:0 0 4px;color:var(--accent);}
+  .sub{color:var(--ink-soft);font-size:14px;margin-bottom:22px;}
+  .banner{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:14px 16px;font-size:13.5px;color:#5c4a13;margin-bottom:26px;}
+  .banner b{color:#4a3a0a;}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+  .tab{padding:8px 14px;border-radius:20px;background:var(--card);border:1px solid var(--line);cursor:pointer;font-size:13.5px;font-weight:600;color:var(--ink-soft);}
+  .tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .module{display:none;}
+  .module.active{display:block;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:16px;}
+  .ref{font-size:13px;color:var(--accent);background:var(--accent-soft);border-radius:8px;padding:10px 12px;margin-bottom:16px;}
+  .ref b{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-soft);margin-bottom:2px;}
+  .qhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;font-size:12.5px;color:var(--ink-soft);}
+  .qtext{font-size:16px;font-weight:600;margin-bottom:16px;}
+  .opts{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+  .opt{border:1px solid var(--line);border-radius:9px;padding:10px 14px;cursor:pointer;font-size:14px;transition:background .15s;}
+  .opt:hover{background:var(--accent-soft);}
+  .opt.correct{background:var(--good-bg);border-color:var(--good);}
+  .opt.incorrect{background:var(--bad-bg);border-color:var(--bad);}
+  .opt.disabled{pointer-events:none;}
+  .explain{display:none;font-size:13.5px;color:var(--ink-soft);background:var(--accent-soft);border-radius:9px;padding:12px 14px;margin-top:6px;}
+  .explain.show{display:block;}
+  .flipcard{cursor:pointer;}
+  .flipback{display:none;margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);font-size:14px;color:var(--ink-soft);}
+  .flipback.show{display:block;}
+  .navrow{display:flex;justify-content:space-between;align-items:center;margin-top:6px;}
+  .btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13.5px;font-weight:600;cursor:pointer;}
+  .btn.secondary{background:var(--accent-soft);color:var(--accent);}
+  .btn:disabled{opacity:.4;cursor:default;}
+  .score{font-size:13px;color:var(--ink-soft);}
+  .mathbox{text-align:center;}
+  .mathbig{font-size:34px;font-weight:700;margin:20px 0;letter-spacing:.02em;}
+  .mathinput{font-size:22px;text-align:center;padding:10px;border:2px solid var(--line);border-radius:10px;width:160px;}
+  .timer{font-size:15px;color:var(--ink-soft);margin-bottom:6px;}
+  .statrow{display:flex;justify-content:center;gap:26px;margin-top:16px;font-size:14px;}
+  .statrow div b{display:block;font-size:22px;color:var(--accent);}
+  .note{font-size:12.5px;color:var(--ink-soft);margin-top:26px;text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Quant Study Partner</h1>
+  <div class="sub">Fast drills between reading sessions — Rajiv's roadmap, Phase 0–1 content</div>
+
+  <div class="banner">
+    <b>How to use this:</b> each quiz module assumes you've read the referenced chapter first — it's testing recall and intuition, not teaching from scratch. If a question stumps you, that's a signal to go back to the book, not just guess and move on. For actual teaching, proofs, or working through something you're stuck on, talk to Claude directly — this tool is for reps, not explanation.
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+  <div id="modules"></div>
+
+  <div class="note">This is v1, covering where your roadmap currently has you (Phase 0–1: probability, linear algebra, DSA basics, mental math). Ask Claude to extend it with derivatives/stochastic calculus modules once you reach Phase 2.</div>
+</div>
+
+<script>
+// ---------------- DATA ----------------
+const MODULES = [
+  { id:"mental", label:"Mental Math Drill", type:"math" },
+  {
+    id:"prob", label:"Probability", type:"quiz",
+    ref:{book:"Mazzoni, A First Course in Quantitative Finance — Ch. 2 (A Primer on Probability); Zhou, A Practical Guide to Quantitative Finance Interviews — Probability chapters", note:"Read these before attempting this set."},
+    questions:[
+      {q:"You roll two fair six-sided dice. What's the probability their sum is 7?",
+       opts:["1/6","1/12","1/36","5/36"], correct:0,
+       explain:"6 of the 36 equally likely outcomes sum to 7 — (1,6),(2,5),(3,4),(4,3),(5,2),(6,1) — so 6/36 = 1/6.",
+       revisit:"Mazzoni Ch.2, basic counting/probability."},
+      {q:"P(A) = 0.3, P(B) = 0.4, and A and B are independent. What is P(A and B)?",
+       opts:["0.7","0.3","0.4","0.12"], correct:3,
+       explain:"For independent events, P(A∩B) = P(A)·P(B) = 0.3 × 0.4 = 0.12.",
+       revisit:"Mazzoni Ch.2, independence."},
+      {q:"A disease test is 99% accurate (both sensitivity and specificity). Disease prevalence is 1%. You test positive — what's the actual probability you have the disease?",
+       opts:["99%","90%","50%","1%"], correct:2,
+       explain:"Bayes' theorem: P(D|+) = P(+|D)P(D) / [P(+|D)P(D) + P(+|¬D)P(¬D)] = (0.99×0.01)/(0.99×0.01 + 0.01×0.99) = 0.5. The base rate being low means false positives roughly match true positives — a classic quant-interview gotcha.",
+       revisit:"Zhou's interview guide — this exact style of question shows up constantly."},
+      {q:"What is E[X] for a fair six-sided die (X uniform on 1–6)?",
+       opts:["3","3.5","4","21"], correct:1,
+       explain:"E[X] = (1+2+3+4+5+6)/6 = 21/6 = 3.5.",
+       revisit:"Mazzoni Ch.2, moments of random variables."},
+      {q:"Which statement correctly describes the Central Limit Theorem?",
+       opts:[
+         "The sample mean of (almost) any distribution with finite variance becomes approximately normal as sample size grows.",
+         "CLT only applies if the underlying data is already normally distributed.",
+         "CLT says all distributions converge to a uniform distribution.",
+         "CLT applies only to categorical data."
+       ], correct:0,
+       explain:"This is the whole point of CLT — it's why normal approximations show up everywhere in finance even when the underlying returns aren't normal.",
+       revisit:"Mazzoni Ch.2; Harvard Stat 110 lectures."},
+      {q:"Monty Hall: 3 doors, 1 prize. You pick a door. The host (who knows what's behind each) opens a different door showing no prize. Should you switch?",
+       opts:["Yes — switching gives 2/3 odds of winning","No — it's 50/50 either way","No — staying gives better odds","Not enough information"], correct:0,
+       explain:"Your original pick has a 1/3 chance of being right. That doesn't change when the host opens a door — so the other unopened door now carries the remaining 2/3.",
+       revisit:"Zhou's interview guide — a classic that trips people up even after they've seen it before."}
+    ]
+  },
+  {
+    id:"linalg", label:"Linear Algebra", type:"quiz",
+    ref:{book:"Mazzoni, A First Course in Quantitative Finance — Ch. 3 (Vector Spaces)", note:"Read this before attempting this set."},
+    questions:[
+      {q:"If Av = λv for a nonzero vector v, what is λ called?",
+       opts:["An eigenvector","An eigenvalue","A determinant","A trace"], correct:1,
+       explain:"v is the eigenvector; λ, the scalar it gets stretched by, is the eigenvalue.",
+       revisit:"Mazzoni Ch.3, eigenvalue problems."},
+      {q:"What is the rank of a 3×3 identity matrix?",
+       opts:["0","1","2","3"], correct:3,
+       explain:"All three rows/columns are linearly independent, so the rank equals the full dimension: 3.",
+       revisit:"Mazzoni Ch.3, dimensionality and basis."},
+      {q:"True or false: a symmetric matrix always has real eigenvalues.",
+       opts:["True","False"], correct:0,
+       explain:"This is the spectral theorem, and it's exactly why it matters: covariance matrices in portfolio theory are symmetric, which guarantees real eigenvalues — essential for PCA and risk decomposition to make sense.",
+       revisit:"Mazzoni Ch.3."},
+      {q:"Two vectors are orthogonal. What is their dot product?",
+       opts:["1","0","-1","Undefined"], correct:1,
+       explain:"Orthogonal literally means the dot product is zero — no component of one vector lies along the other.",
+       revisit:"Mazzoni Ch.3, inner product."},
+      {q:"For a covariance matrix to be valid, it must be positive semi-definite. What does that mean, practically?",
+       opts:[
+         "Every entry in the matrix must be positive.",
+         "For any vector w, w^T Σ w ≥ 0 — i.e., no portfolio combination can have negative variance.",
+         "The matrix must be square.",
+         "The matrix must be diagonal."
+       ], correct:1,
+       explain:"Variance can't be negative for any portfolio you construct — that constraint is exactly what positive semi-definiteness encodes.",
+       revisit:"Mazzoni Ch.3; comes back explicitly in portfolio theory (Ch.6)."}
+    ]
+  },
+  {
+    id:"dsa", label:"DSA Concepts", type:"quiz",
+    ref:{book:"LeetCode practice + Grokking Algorithms (per your roadmap)", note:"These check conceptual recall — actual fluency comes from solving problems, not just knowing definitions."},
+    questions:[
+      {q:"What's the time complexity of binary search on a sorted array of n elements?",
+       opts:["O(n)","O(log n)","O(n log n)","O(1)"], correct:1,
+       explain:"Each comparison halves the search space, giving O(log n).",
+       revisit:"Any DSA fundamentals resource — this one needs to be automatic."},
+      {q:"Which data structure is LIFO (Last In, First Out)?",
+       opts:["Queue","Stack","Array","Linked list"], correct:1,
+       explain:"A stack pops the most recently pushed item first — think of a stack of plates.",
+       revisit:"DSA basics."},
+      {q:"What's the average-case time complexity of a hash map lookup?",
+       opts:["O(1)","O(n)","O(log n)","O(n²)"], correct:0,
+       explain:"Average case is O(1) with a good hash function; worst case (many collisions) degrades to O(n).",
+       revisit:"DSA basics."},
+      {q:"What's the worst-case time complexity of quicksort?",
+       opts:["O(n log n)","O(n²)","O(n)","O(log n)"], correct:1,
+       explain:"Worst case happens with a consistently bad pivot choice (e.g. already-sorted data with a naive pivot strategy), degrading to O(n²). Average case is O(n log n).",
+       revisit:"DSA basics — worth knowing both average and worst case, interviewers probe this."},
+      {q:"True or false: a binary search tree guarantees O(log n) lookup in all cases.",
+       opts:["True","False"], correct:1,
+       explain:"An unbalanced BST (e.g. built by inserting sorted data in order) degrades to a linked list — O(n) lookup. Only balanced BSTs (AVL, red-black) guarantee O(log n).",
+       revisit:"DSA basics — a favorite gotcha in interviews."}
+    ]
+  }
+];
+
+// ---------------- RENDER TABS ----------------
+const tabsEl = document.getElementById("tabs");
+const modulesEl = document.getElementById("modules");
+
+MODULES.forEach((m,i)=>{
+  const tab = document.createElement("div");
+  tab.className = "tab" + (i===0 ? " active" : "");
+  tab.textContent = m.label;
+  tab.onclick = ()=>switchTab(i);
+  tabsEl.appendChild(tab);
+
+  const modDiv = document.createElement("div");
+  modDiv.className = "module" + (i===0 ? " active" : "");
+  modDiv.id = "mod-"+m.id;
+  modulesEl.appendChild(modDiv);
+
+  if(m.type==="quiz") renderQuiz(m, modDiv);
+  if(m.type==="math") renderMathDrill(modDiv);
+});
+
+function switchTab(idx){
+  document.querySelectorAll(".tab").forEach((t,i)=>t.classList.toggle("active", i===idx));
+  document.querySelectorAll(".module").forEach((d,i)=>d.classList.toggle("active", i===idx));
+}
+
+// ---------------- QUIZ MODULE ----------------
+function renderQuiz(m, container){
+  let idx = 0;
+  let score = 0;
+  let answered = new Array(m.questions.length).fill(false);
+
+  const refDiv = document.createElement("div");
+  refDiv.className = "ref";
+  refDiv.innerHTML = `<b>Reference</b>${m.ref.book}<br><span style="opacity:.8">${m.ref.note}</span>`;
+  container.appendChild(refDiv);
+
+  const card = document.createElement("div");
+  card.className = "card";
+  container.appendChild(card);
+
+  function render(){
+    const q = m.questions[idx];
+    card.innerHTML = `
+      <div class="qhead"><span>Question ${idx+1} of ${m.questions.length}</span><span class="score">Score: ${score}/${answered.filter(Boolean).length}</span></div>
+      <div class="qtext">${q.q}</div>
+      <div class="opts" id="optsBox"></div>
+      <div class="explain" id="explainBox"></div>
+      <div class="navrow">
+        <button class="btn secondary" id="prevBtn" ${idx===0?"disabled":""}>Previous</button>
+        <button class="btn" id="nextBtn" ${idx===m.questions.length-1?"disabled":""}>Next</button>
+      </div>
+    `;
+    const optsBox = card.querySelector("#optsBox");
+    q.opts.forEach((o,oi)=>{
+      const div = document.createElement("div");
+      div.className = "opt";
+      div.textContent = o;
+      div.onclick = ()=>selectAnswer(oi);
+      optsBox.appendChild(div);
+    });
+    card.querySelector("#prevBtn").onclick = ()=>{ idx--; render(); };
+    card.querySelector("#nextBtn").onclick = ()=>{ idx++; render(); };
+
+    if(answered[idx]) revealState(q, card, m._lastPick ? m._lastPick[idx] : null);
+  }
+
+  function selectAnswer(oi){
+    if(answered[idx]) return;
+    answered[idx] = true;
+    if(!m._lastPick) m._lastPick = {};
+    m._lastPick[idx] = oi;
+    const q = m.questions[idx];
+    if(oi === q.correct) score++;
+    revealState(q, card, oi);
+    card.querySelector(".score").textContent = `Score: ${score}/${answered.filter(Boolean).length}`;
+  }
+
+  function revealState(q, card, picked){
+    const opts = card.querySelectorAll(".opt");
+    opts.forEach((el,oi)=>{
+      el.classList.add("disabled");
+      if(oi===q.correct) el.classList.add("correct");
+      else if(oi===picked) el.classList.add("incorrect");
+    });
+    const eb = card.querySelector("#explainBox");
+    eb.classList.add("show");
+    eb.innerHTML = `${q.explain}${picked!==q.correct ? `<br><br><b>Wrong? → </b>${q.revisit}` : ""}`;
+  }
+
+  render();
+}
+
+// ---------------- MENTAL MATH DRILL ----------------
+function renderMathDrill(container){
+  const refDiv = document.createElement("div");
+  refDiv.className = "ref";
+  refDiv.innerHTML = `<b>Why this matters</b>Quant interviews commonly include timed mental-math screens (arithmetic, percentages, quick estimation) — this drill is generative, so it never runs out of problems.`;
+  container.appendChild(refDiv);
+
+  const card = document.createElement("div");
+  card.className = "card mathbox";
+  container.appendChild(card);
+
+  let seconds = 60, timerId = null, running = false;
+  let correct = 0, total = 0, current = null;
+
+  function genProblem(){
+    const ops = ["+","-","×","%"];
+    const op = ops[Math.floor(Math.random()*ops.length)];
+    let a,b,answer,text;
+    if(op==="+"){ a=rnd(10,999); b=rnd(10,999); answer=a+b; text=`${a} + ${b}`; }
+    else if(op==="-"){ a=rnd(10,999); b=rnd(10,999); if(b>a)[a,b]=[b,a]; answer=a-b; text=`${a} − ${b}`; }
+    else if(op==="×"){ a=rnd(2,25); b=rnd(2,25); answer=a*b; text=`${a} × ${b}`; }
+    else { a=rnd(1,20)*5; b=rnd(20,400); answer=Math.round(a/100*b*100)/100; text=`${a}% of ${b}`; }
+    return {text, answer};
+  }
+  function rnd(lo,hi){ return Math.floor(Math.random()*(hi-lo+1))+lo; }
+
+  function renderIdle(){
+    card.innerHTML = `
+      <div class="statrow">
+        <div><b>${correct}</b>correct</div>
+        <div><b>${total}</b>attempted</div>
+      </div>
+      <div style="margin-top:18px;"><button class="btn" id="startBtn">Start 60s drill</button></div>
+    `;
+    card.querySelector("#startBtn").onclick = startDrill;
+  }
+
+  function startDrill(){
+    correct=0; total=0; seconds=60; running=true;
+    nextProblem();
+    timerId = setInterval(()=>{
+      seconds--;
+      const t = card.querySelector("#timerLabel");
+      if(t) t.textContent = seconds+"s left";
+      if(seconds<=0){ endDrill(); }
+    },1000);
+  }
+
+  function nextProblem(){
+    current = genProblem();
+    card.innerHTML = `
+      <div class="timer" id="timerLabel">${seconds}s left</div>
+      <div class="mathbig">${current.text} = ?</div>
+      <input class="mathinput" id="ansInput" type="number" autofocus />
+      <div style="margin-top:14px;"><button class="btn" id="submitBtn">Submit</button></div>
+      <div class="statrow"><div><b>${correct}</b>correct</div><div><b>${total}</b>attempted</div></div>
+    `;
+    const input = card.querySelector("#ansInput");
+    input.focus();
+    const submit = ()=>{
+      if(!running) return;
+      total++;
+      const val = parseFloat(input.value);
+      if(Math.abs(val - current.answer) < 0.01) correct++;
+      nextProblem();
+    };
+    card.querySelector("#submitBtn").onclick = submit;
+    input.addEventListener("keydown", (e)=>{ if(e.key==="Enter") submit(); });
+  }
+
+  function endDrill(){
+    running=false;
+    clearInterval(timerId);
+    card.innerHTML = `
+      <div class="qtext">Time's up.</div>
+      <div class="statrow">
+        <div><b>${correct}</b>correct</div>
+        <div><b>${total}</b>attempted</div>
+        <div><b>${total? Math.round(correct/total*100):0}%</b>accuracy</div>
+      </div>
+      <div style="margin-top:18px;"><button class="btn" id="restartBtn">Run again</button></div>
+    `;
+    card.querySelector("#restartBtn").onclick = renderIdle;
+  }
+
+  renderIdle();
+}
+</script>
+</body>
+</html>

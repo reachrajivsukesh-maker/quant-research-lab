@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Toy Trading Simulator</title>
+<style>
+  :root{
+    --bg:#f7f8fa; --card:#ffffff; --ink:#0b0b0b; --ink-soft:#52514e; --muted:#898781;
+    --line:#e1e0d9; --accent:#1f3864; --accent-soft:#eef1f7;
+    --price:#2a78d6; --shortma:#eb6834; --longma:#1baf7a;
+    --good:#0ca30c; --critical:#d03b3b;
+    --warn-bg:#fff4e5; --warn-line:#f0c674;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.5;}
+  .wrap{max-width:920px;margin:0 auto;padding:28px 20px 70px;}
+  h1{font-size:24px;margin:0 0 4px;color:var(--accent);}
+  .sub{color:var(--ink-soft);font-size:13.5px;margin-bottom:18px;}
+  .banner{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:13px 16px;font-size:13px;color:#5c4a13;margin-bottom:22px;}
+  .banner b{color:#4a3a0a;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px;}
+  .controls{display:grid;grid-template-columns:1fr 1fr;gap:14px 22px;}
+  .ctrl label{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink-soft);margin-bottom:4px;}
+  .ctrl label b{color:var(--ink);font-weight:600;}
+  .ctrl input[type=range]{width:100%;}
+  .rowbtns{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap;}
+  .btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13.5px;font-weight:600;cursor:pointer;}
+  .cheat-toggle{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-soft);background:var(--accent-soft);padding:8px 12px;border-radius:8px;}
+  .cheat-toggle input{width:16px;height:16px;}
+  canvas{width:100%;height:auto;display:block;background:#fcfcfb;border-radius:10px;}
+  .chart-title{font-size:13px;font-weight:600;color:var(--ink-soft);margin-bottom:8px;}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin-top:8px;}
+  .legend span{display:inline-flex;align-items:center;gap:5px;}
+  .dot{width:10px;height:3px;border-radius:2px;display:inline-block;}
+  .tri{width:0;height:0;display:inline-block;}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px;}
+  th{background:var(--accent);color:#fff;text-align:left;padding:7px 10px;font-weight:600;}
+  td{padding:7px 10px;border-bottom:1px solid var(--line);}
+  td.num{font-variant-numeric:tabular-nums;text-align:right;}
+  tr.cheatrow td{color:var(--critical);}
+  .note{font-size:12.5px;color:var(--ink-soft);margin-top:22px;text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Toy Trading Simulator</h1>
+  <div class="sub">Synthetic market, moving-average crossover strategy, and a live lookahead-bias demo</div>
+
+  <div class="banner">
+    <b>This is a toy, on purpose.</b> The market here is synthetic (a random walk with drift + volatility, exactly like our lessons) — not real price data. It exists to let you see a full "signal → position → P&L" loop working end to end, right now, with zero new theory. Real backtesting on real market data with proper libraries and walk-forward testing is Phase 3 of your roadmap.
+  </div>
+
+  <div class="card">
+    <div class="controls">
+      <div class="ctrl">
+        <label>Drift (daily trend) <b id="driftVal"></b></label>
+        <input type="range" id="drift" min="-0.3" max="0.6" step="0.05" value="0.15">
+      </div>
+      <div class="ctrl">
+        <label>Volatility (daily noise) <b id="volVal"></b></label>
+        <input type="range" id="vol" min="0.5" max="4" step="0.1" value="1.5">
+      </div>
+      <div class="ctrl">
+        <label>Short MA window <b id="shortVal"></b></label>
+        <input type="range" id="shortWin" min="3" max="20" step="1" value="8">
+      </div>
+      <div class="ctrl">
+        <label>Long MA window <b id="longVal"></b></label>
+        <input type="range" id="longWin" min="15" max="60" step="1" value="25">
+      </div>
+    </div>
+    <div class="rowbtns">
+      <button class="btn" id="regenBtn">Generate new market</button>
+      <label class="cheat-toggle"><input type="checkbox" id="cheatToggle"> Cheat mode — peek at tomorrow's price (lookahead bias demo)</label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="chart-title">Price, with short/long moving averages and trade signals</div>
+    <canvas id="priceChart" width="880" height="300"></canvas>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--price)"></i>Price</span>
+      <span><i class="dot" style="background:var(--shortma)"></i>Short MA</span>
+      <span><i class="dot" style="background:var(--longma)"></i>Long MA</span>
+      <span><i class="tri" style="border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:8px solid var(--good)"></i>Buy</span>
+      <span><i class="tri" style="border-left:5px solid transparent;border-right:5px solid transparent;border-top:8px solid var(--critical)"></i>Sell</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="chart-title">Cumulative P&L (points) — strategy vs. buy &amp; hold<span id="cheatLegendNote"></span></div>
+    <canvas id="equityChart" width="880" height="260"></canvas>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--price)"></i>Honest MA strategy</span>
+      <span><i class="dot" style="background:var(--muted)"></i>Buy &amp; hold</span>
+      <span id="cheatLegend" style="display:none"><i class="dot" style="background:var(--critical)"></i>Cheat (oracle) strategy</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="chart-title">Stats</div>
+    <table id="statsTable">
+      <tr><th>Strategy</th><th>Total P&L</th><th># Trades</th><th>Max drawdown</th><th>Sharpe-like (mean/std)</th></tr>
+    </table>
+  </div>
+
+  <div class="note">Sharpe-like here is exactly mean(daily P&L)/std(daily P&L), per Phase 1's own definition — a direct callback, not a different formula. Toggle Cheat Mode and watch what happens to it.</div>
+</div>
+
+<script>
+const priceCanvas = document.getElementById("priceChart");
+const equityCanvas = document.getElementById("equityChart");
+const pctx = priceCanvas.getContext("2d");
+const ectx = equityCanvas.getContext("2d");
+
+const drift = document.getElementById("drift");
+const vol = document.getElementById("vol");
+const shortWin = document.getElementById("shortWin");
+const longWin = document.getElementById("longWin");
+const cheatToggle = document.getElementById("cheatToggle");
+const regenBtn = document.getElementById("regenBtn");
+
+let prices = [];
+const N = 250;
+
+function gaussian(){
+  let u = 1 - Math.random(), v = Math.random();
+  return Math.sqrt(-2*Math.log(u)) * Math.cos(2*Math.PI*v);
+}
+
+function generateMarket(){
+  const d = parseFloat(drift.value), s = parseFloat(vol.value);
+  const p = [100];
+  for(let t=1;t<N;t++){
+    p.push(p[t-1] + d + gaussian()*s);
+  }
+  prices = p;
+}
+
+function movingAvg(arr, endIdx, window){
+  if(endIdx < window-1) return null;
+  let sum = 0;
+  for(let i=endIdx-window+1;i<=endIdx;i++) sum += arr[i];
+  return sum / window;
+}
+
+function computeStrategy(){
+  const sw = parseInt(shortWin.value), lw = parseInt(longWin.value);
+  const shortMA = [], longMA = [];
+  for(let t=0;t<N;t++){
+    shortMA.push(movingAvg(prices, t, sw));
+    longMA.push(movingAvg(prices, t, lw));
+  }
+  const honestPos = [];
+  for(let t=0;t<N-1;t++){
+    honestPos.push((shortMA[t]!==null && longMA[t]!==null && shortMA[t] > longMA[t]) ? 1 : 0);
+  }
+  const cheatPos = [];
+  for(let t=0;t<N-1;t++){
+    cheatPos.push(prices[t+1] > prices[t] ? 1 : 0);
+  }
+  const returns = [];
+  for(let t=0;t<N-1;t++) returns.push(prices[t+1]-prices[t]);
+
+  function buildResult(pos){
+    const dailyPnL = pos.map((p,i)=>p*returns[i]);
+    const pnl = [0];
+    for(let i=0;i<dailyPnL.length;i++) pnl.push(pnl[i]+dailyPnL[i]);
+    let trades = 0;
+    for(let i=1;i<pos.length;i++) if(pos[i]!==pos[i-1]) trades++;
+    let peak = -Infinity, maxDD = 0;
+    pnl.forEach(v=>{ peak=Math.max(peak,v); maxDD=Math.max(maxDD, peak-v); });
+    const mean = dailyPnL.reduce((a,b)=>a+b,0)/dailyPnL.length;
+    const variance = dailyPnL.reduce((a,b)=>a+(b-mean)*(b-mean),0)/dailyPnL.length;
+    const std = Math.sqrt(variance);
+    const sharpe = std>0 ? mean/std : 0;
+    return {pos, pnl, trades, maxDD, sharpe, totalPnL: pnl[pnl.length-1]};
+  }
+
+  const buyHoldPnL = [0];
+  for(let i=0;i<returns.length;i++) buyHoldPnL.push(buyHoldPnL[i]+returns[i]);
+
+  return {
+    shortMA, longMA,
+    honest: buildResult(honestPos),
+    cheat: buildResult(cheatPos),
+    buyHoldPnL
+  };
+}
+
+function clear(ctx, canvas){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+}
+
+function drawAxes(ctx, w, h, pad){
+  ctx.strokeStyle = "#e1e0d9";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, h-pad.b);
+  ctx.lineTo(w-pad.r, h-pad.b);
+  ctx.stroke();
+}
+
+function scaleFns(values, w, h, pad){
+  const min = Math.min(...values), max = Math.max(...values);
+  const range = (max-min)||1;
+  const x = i => pad.l + (i/(values.length-1)) * (w-pad.l-pad.r);
+  const y = v => (h-pad.b) - ((v-min)/range) * (h-pad.t-pad.b);
+  return {x,y,min,max};
+}
+
+function drawLine(ctx, values, x, y, color, width){
+  ctx.strokeStyle = color; ctx.lineWidth = width||2;
+  ctx.beginPath();
+  let started = false;
+  values.forEach((v,i)=>{
+    if(v===null || v===undefined){ started=false; return; }
+    if(!started){ ctx.moveTo(x(i), y(v)); started=true; }
+    else ctx.lineTo(x(i), y(v));
+  });
+  ctx.stroke();
+}
+
+function renderPriceChart(res){
+  const w = priceCanvas.width, h = priceCanvas.height;
+  clear(pctx, priceCanvas);
+  const pad = {l:40,r:14,t:14,b:24};
+  const all = prices.concat(res.shortMA.filter(v=>v!==null)).concat(res.longMA.filter(v=>v!==null));
+  const {x,y} = scaleFns(all, w, h, pad);
+  const xN = i => pad.l + (i/(N-1)) * (w-pad.l-pad.r);
+  drawAxes(pctx, w, h, pad);
+  drawLine(pctx, prices, xN, y, getVar("--price"), 2);
+  drawLine(pctx, res.longMA, xN, y, getVar("--longma"), 1.6);
+  drawLine(pctx, res.shortMA, xN, y, getVar("--shortma"), 1.6);
+
+  // buy/sell markers from honest position
+  const pos = res.honest.pos;
+  for(let i=1;i<pos.length;i++){
+    if(pos[i]!==pos[i-1]){
+      const px = xN(i), py = y(prices[i]);
+      pctx.fillStyle = pos[i]===1 ? getVar("--good") : getVar("--critical");
+      pctx.beginPath();
+      if(pos[i]===1){ pctx.moveTo(px-5,py+8); pctx.lineTo(px+5,py+8); pctx.lineTo(px,py); }
+      else { pctx.moveTo(px-5,py-8); pctx.lineTo(px+5,py-8); pctx.lineTo(px,py); }
+      pctx.closePath(); pctx.fill();
+    }
+  }
+}
+
+function renderEquityChart(res, showCheat){
+  const w = equityCanvas.width, h = equityCanvas.height;
+  clear(ectx, equityCanvas);
+  const pad = {l:44,r:14,t:14,b:24};
+  let all = res.honest.pnl.concat(res.buyHoldPnL);
+  if(showCheat) all = all.concat(res.cheat.pnl);
+  const {x,y} = scaleFns(all, w, h, pad);
+  const xN = i => pad.l + (i/(res.honest.pnl.length-1)) * (w-pad.l-pad.r);
+  drawAxes(ectx, w, h, pad);
+  // zero line
+  ectx.strokeStyle = "#c3c2b7"; ectx.setLineDash([3,3]);
+  ectx.beginPath(); ectx.moveTo(pad.l, y(0)); ectx.lineTo(w-pad.r, y(0)); ectx.stroke();
+  ectx.setLineDash([]);
+  drawLine(ectx, res.buyHoldPnL, xN, y, getVar("--muted"), 1.6);
+  drawLine(ectx, res.honest.pnl, xN, y, getVar("--price"), 2.2);
+  if(showCheat) drawLine(ectx, res.cheat.pnl, xN, y, getVar("--critical"), 2.2);
+}
+
+function getVar(name){
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function fmt(v){ return (v>=0?"+":"") + v.toFixed(1); }
+
+function renderStats(res, showCheat){
+  const table = document.getElementById("statsTable");
+  table.innerHTML = `<tr><th>Strategy</th><th>Total P&amp;L</th><th># Trades</th><th>Max drawdown</th><th>Sharpe-like (mean/std)</th></tr>`;
+  const rows = [
+    ["Honest MA strategy", res.honest],
+    ["Buy &amp; hold", {totalPnL: res.buyHoldPnL[res.buyHoldPnL.length-1], trades:1, maxDD: Math.max(0,...res.buyHoldPnL.map((v,i,a)=>Math.max(...a.slice(0,i+1))-v)), sharpe: null}],
+  ];
+  if(showCheat) rows.push(["Cheat (oracle) strategy", res.cheat]);
+  rows.forEach(([name,r],idx)=>{
+    const tr = document.createElement("tr");
+    if(name.startsWith("Cheat")) tr.className = "cheatrow";
+    tr.innerHTML = `<td>${name}</td><td class="num">${fmt(r.totalPnL)}</td><td class="num">${r.trades}</td><td class="num">${r.maxDD.toFixed(1)}</td><td class="num">${r.sharpe===null?"—":r.sharpe.toFixed(3)}</td>`;
+    table.appendChild(tr);
+  });
+}
+
+function updateLabels(){
+  document.getElementById("driftVal").textContent = parseFloat(drift.value).toFixed(2);
+  document.getElementById("volVal").textContent = parseFloat(vol.value).toFixed(2);
+  document.getElementById("shortVal").textContent = shortWin.value;
+  document.getElementById("longVal").textContent = longWin.value;
+}
+
+function render(){
+  updateLabels();
+  const res = computeStrategy();
+  const showCheat = cheatToggle.checked;
+  document.getElementById("cheatLegend").style.display = showCheat ? "inline-flex" : "none";
+  document.getElementById("cheatLegendNote").textContent = showCheat ? " — cheat strategy overlaid" : "";
+  renderPriceChart(res);
+  renderEquityChart(res, showCheat);
+  renderStats(res, showCheat);
+}
+
+regenBtn.addEventListener("click", ()=>{ generateMarket(); render(); });
+[drift, vol].forEach(el => el.addEventListener("input", ()=>{ generateMarket(); render(); }));
+[shortWin, longWin, cheatToggle].forEach(el => el.addEventListener("input", render));
+
+generateMarket();
+render();
+</script>
+</body>
+</html>

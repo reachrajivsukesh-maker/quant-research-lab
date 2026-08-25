@@ -1,0 +1,6 @@
+variant,mean_bps,vs_baseline,ci_low,ci_high,t_stat,win_rate_pct,n_paths
+fixed 5% (baseline),180.89,0.0,0.0,0.0,,0.0,300
+fixed 8%,148.62,-32.26,-35.01,-29.52,-23.05,93.0,300
+adaptive k=4,198.04,17.16,15.6,18.71,21.58,5.3,300
+adaptive ramp-only,179.87,-1.02,-1.83,-0.21,-2.48,62.0,300
+adaptive ease-only,199.23,18.35,16.89,19.8,24.73,2.0,300

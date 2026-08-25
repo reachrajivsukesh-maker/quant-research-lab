@@ -1,0 +1,5 @@
+engine,final_value,return_pct,shortfall_bps
+fixed / BIASED,16177703.0,7.85,157.46
+fixed / point-in-time,16143672.0,7.62,156.8
+adaptive / BIASED,16418975.0,9.46,166.33
+adaptive / point-in-time,16220579.0,8.14,160.95
