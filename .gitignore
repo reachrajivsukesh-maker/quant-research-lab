@@ -7,3 +7,7 @@ venv/
 .pytest_cache/
 .vscode/
 .idea/
+
+# Unit 6/7 raw & regenerable data (multi-GB, reproducible via pull_and_bucket.py)
+microstructure-research/raw/
+microstructure-research/breadth_data/
