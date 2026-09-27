@@ -41,6 +41,19 @@ Real daily returns have autocorrelation ~0.00 — markets are approximately rand
 walks in *direction*; their structure is in volatility and volume. The strategy
 beat buy-and-hold on **0 of 12** real stock/window combinations.
 
+## [→ Market Microstructure & RL Trading](microstructure-research/)
+
+Does order-flow imbalance (the relative volume of aggressive buys vs. sells in the
+last minute) predict the next minute's return, and can a reinforcement-learning
+agent turn any such edge into a strategy that survives real trading fees? Five
+rounds of testing on real Binance trade-level data (up to 26 days, 24M trades) —
+including a self-caught standard-error bug that reversed the conclusion twice —
+land on **no validated signal, and no profitable strategy net of realistic costs
+(7.5-10bps), checked across 9 assets and confirmed robust to random training seed.**
+
+> A Q-learning agent that correctly refuses to trade because the cost outweighs a
+> noisy signal is a working answer, not a failed one.
+
 ## Supporting work
 
 | Directory | What it contains |

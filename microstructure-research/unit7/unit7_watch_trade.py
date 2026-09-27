@@ -89,7 +89,7 @@ if __name__ == "__main__":
     ax.axhline(0, color="#0b0b0b", linewidth=0.8)
     ax.set_xlabel("test-segment minute index (≈ 11,225 minutes ≈ 7.8 days)")
     ax.set_ylabel("cumulative return, %")
-    ax.set_title("Unit 7 -- real BTCUSDT test period, frictionless (cost=0) demonstration regime\n"
+    ax.set_title("Real BTCUSDT test period, frictionless (cost=0) demonstration regime\n"
                  "NOT tradeable at realistic Binance fees (7.5-10bps) -- see unit7_diagnose.py for why")
     ax.legend(fontsize=9)
     ax.grid(color="#e1e0d9", linewidth=0.7); ax.set_axisbelow(True)
@@ -119,7 +119,7 @@ if __name__ == "__main__":
                                        gridspec_kw={"height_ratios": [1.3, 1]})
     axp.plot(range(window), price[sl], color="#0b0b0b", linewidth=1.1)
     axp.set_ylabel("BTCUSDT close, $")
-    axp.set_title(f"Unit 7 -- zoomed window (test minutes {best_start}-{best_start+window}), "
+    axp.set_title(f"Zoomed window (test minutes {best_start}-{best_start+window}), "
                  f"frictionless regime: watch them actually trade")
     axp.grid(color="#e1e0d9", linewidth=0.7); axp.set_axisbelow(True)
 

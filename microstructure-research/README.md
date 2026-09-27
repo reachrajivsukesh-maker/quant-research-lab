@@ -1,12 +1,12 @@
-# Market Microstructure & RL Trading Research (Units 6-7)
+# Market Microstructure & RL Trading Research
 
 Two connected research questions on real market data: does order-flow imbalance (OFI) predict
-short-horizon returns (Unit 6), and can a reinforcement-learning agent exploit it once realistic
-transaction costs are included (Unit 7)? Both are answered with real trade-level data, walk-forward
+short-horizon returns, and can a reinforcement-learning agent exploit it once realistic
+transaction costs are included? Both are answered with real trade-level data, walk-forward
 discipline, and — where an initial result turned out to be fragile — an explicit correction rather
 than a quiet redo.
 
-## Unit 6 — Order-flow imbalance (OFI)
+## Order-flow imbalance (OFI)
 
 **Question:** does the relative volume of aggressive buys vs. sells in the last minute predict the
 next minute's return?
@@ -32,7 +32,7 @@ self-caught statistical bug, and one purpose-built resolving test at 4x the data
 test), plus matching `chart_*.py` scripts. **Results:** `unit6/results/` — regression tables,
 decile analysis, and the charts referenced in the PDF.
 
-## Unit 7 — Can an RL agent trade this, net of real costs?
+## Can an RL agent trade this, net of real costs?
 
 **Question:** if OFI has any exploitable structure at all, does a tabular Q-learning agent, trained
 and tested walk-forward on the same real data, turn it into a strategy that survives Binance's
@@ -42,8 +42,9 @@ actual trading fees?
 random seed.**
 
 1. **Design & baseline** (fixed-α vs. Kalman-style adaptive-α Q-learning; 27-state, 3-action) —
-   benchmarked on Unit 5's own backtester/cost model, first on synthetic regimes, then corrected
-   to the real BTCUSDT data once flagged that the synthetic pass wasn't the actual target.
+   benchmarked on the same backtester/cost model as the [execution cost research](../execution-research/),
+   first on synthetic regimes, then corrected to the real BTCUSDT data once flagged that the
+   synthetic pass wasn't the actual target.
 2. **Real BTCUSDT, cost sweep (0/4/15bps):** at any realistic cost, both Q-learning variants
    unanimously return exactly 0.00%, across 20 training seeds.
 3. **Mechanism, in the literal Q-table:** entry cost (7.5-10bps, Binance's live fee schedule) is
@@ -64,7 +65,7 @@ train/test on real BTC), `unit7_diagnose.py` (the literal Q-table mechanism chec
 `unit7_multiscale.py` (1-60min horizon sweep), `unit7_watch_trade.py` (frictionless behavioral
 demonstration), `unit7_breadth.py` / `unit7_breadth_multiseed.py` (the 9-asset breadth test and its
 multi-seed resolution). `pull_and_bucket.py` and the original single-symbol `bucket_trades.py`
-(both one level up, alongside the shared `btc_1min_ofi.csv` dataset both units train/test on) pull
+(both one level up, alongside the shared `btc_1min_ofi.csv` dataset both studies train/test on) pull
 and bucket real Binance trade data for any set of symbols — run `pull_and_bucket.py` yourself to
 regenerate the per-minute data; raw daily dumps and the 8-symbol breadth-test CSVs are not committed
 here, only results, to keep this repo lean and reproducible from source. **Results:**
@@ -76,4 +77,4 @@ Every "0.00%" or "zero activity" result above is a *correct, structural* answer 
 cost assumption (Binance's real published fee schedule) — not a bug, and checked mechanistically
 each time rather than asserted. Frictionless (cost=0) numbers appear only as signal-existence /
 mechanism checks, explicitly never as a tradability claim. This distinction is enforced consistently
-across both units.
+across both studies.

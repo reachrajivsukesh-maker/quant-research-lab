@@ -47,8 +47,8 @@ for strat, color in COLORS.items():
 ax.axhline(0, color="#0b0b0b", linewidth=0.8)
 ax.set_xlabel("assumed turnover cost, bps per unit of |Δposition|")
 ax.set_ylabel("test-segment cumulative return, %")
-ax.set_title("Unit 7 Pass 2 -- real BTCUSDT, out-of-sample return vs. assumed trading cost\n"
-             "(26-day data, same test window as Unit 6 Pass 5; real 1-min std ≈ 5bps)")
+ax.set_title("Real BTCUSDT, out-of-sample return vs. assumed trading cost\n"
+             "(26-day data, same walk-forward test window as the OFI study; real 1-min std ≈ 5bps)")
 ax.axvline(5, color="#c3c2b7", linestyle=":", linewidth=1)
 ax.annotate("~1-min return std (5bps)", xy=(5, ax.get_ylim()[0]), xytext=(5.5, ax.get_ylim()[0]*0.9),
             fontsize=8, color="#52514e")
