@@ -6,7 +6,7 @@ transaction costs are included? Both are answered with real trade-level data, wa
 discipline, and — where an initial result turned out to be fragile — an explicit correction rather
 than a quiet redo.
 
-## Order-flow imbalance (OFI)
+## Order-flow imbalance (OFI) — [`unit6/`](unit6/)
 
 **Question:** does the relative volume of aggressive buys vs. sells in the last minute predict the
 next minute's return?
@@ -32,7 +32,7 @@ self-caught statistical bug, and one purpose-built resolving test at 4x the data
 test), plus matching `chart_*.py` scripts. **Results:** `unit6/results/` — regression tables,
 decile analysis, and the charts referenced in the PDF.
 
-## Can an RL agent trade this, net of real costs?
+## Can an RL agent trade this, net of real costs? — [`unit7/`](unit7/)
 
 **Question:** if OFI has any exploitable structure at all, does a tabular Q-learning agent, trained
 and tested walk-forward on the same real data, turn it into a strategy that survives Binance's
