@@ -1,8 +1,11 @@
+import os
 import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
+
+OUT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results', 'crypto_hac_chart.png')
 
 BLUE = '#2a78d6'
 ORANGE = '#eb6834'
@@ -66,8 +69,9 @@ ax2.tick_params(axis='y', colors=BLUE)
 axt.tick_params(axis='y', colors=RED)
 ax2.tick_params(axis='x', colors=MUTED)
 lines = [b1, b2]
-ax2.legend(lines, ['OFI beta', 'momentum beta'], frameon=False, loc='upper center', fontsize=9)
+ax2.legend(lines, ['OFI beta', 'momentum beta'], frameon=False, loc='upper center',
+           bbox_to_anchor=(0.5, -0.12), ncol=2, fontsize=9)
 
 plt.tight_layout()
-plt.savefig('crypto_hac_chart.png', dpi=150, facecolor=SURFACE)
+plt.savefig(OUT_PATH, dpi=150, facecolor=SURFACE, bbox_inches='tight')
 print("saved")
